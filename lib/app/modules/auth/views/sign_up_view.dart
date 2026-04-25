@@ -158,7 +158,7 @@ class SignUpView extends GetView<SignupController> {
                 const SizedBox(height: 12),
                 
                 // Display Selected Address
-                Obx(() => controller.addressLineController.text.isNotEmpty 
+                Obx(() => controller.lat.value.isNotEmpty 
                   ? Column(
                       children: [
                         CustomTextField(
