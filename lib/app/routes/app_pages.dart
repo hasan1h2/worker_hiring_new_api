@@ -1,9 +1,4 @@
 import 'package:get/get.dart';
-
-import '../modules/auth/bindings/auth_binding.dart';
-import '../modules/auth/views/otp_view.dart';
-import '../modules/auth/views/sign_in_view.dart';
-import '../modules/auth/views/sign_up_view.dart';
 import '../modules/i_need_help/create_task/bindings/create_task_binding.dart';
 import '../modules/i_need_help/create_task/views/create_task_view.dart';
 import '../modules/i_need_help/create_task/views/task_success_view.dart';
@@ -53,6 +48,14 @@ import 'package:worker_hiring/app/modules/i_want_to_work/profile/views/worker_se
 
 import 'package:worker_hiring/app/modules/i_need_help/payment/views/payment_view.dart';
 
+// Auth Module Imports
+import '../modules/auth/login/bindings/login_binding.dart';
+import '../modules/auth/login/views/login_view.dart';
+import '../modules/auth/otp_verification/bindings/otp_verification_binding.dart';
+import '../modules/auth/sign_up/bindings/signup_binding.dart';
+import '../modules/auth/sign_up/views/sign_up_view.dart';
+import '../modules/auth/otp_verification/views/otp_view.dart';
+
 part 'app_routes.dart';
 
 class AppPages {
@@ -78,18 +81,18 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.SIGN_IN,
-      page: () => const SignInView(),
-      binding: AuthBinding(),
+      page: () => const LoginView(),
+      binding: LoginBinding(),
     ),
     GetPage(
       name: _Paths.SIGN_UP,
       page: () => const SignUpView(),
-      binding: AuthBinding(),
+      binding: SignupBinding(),
     ),
     GetPage(
       name: _Paths.OTP,
       page: () => const OtpView(),
-      binding: AuthBinding(),
+      binding: OtpVerificationBinding(),
     ),
     GetPage(
       name: _Paths.SERVICE_SELECTION,

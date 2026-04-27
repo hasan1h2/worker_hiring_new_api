@@ -6,12 +6,14 @@ class SocialButton extends StatelessWidget {
   final String text;
   final String iconPath;
   final VoidCallback onPressed;
+  final bool isLoading;
 
   const SocialButton({
     super.key,
     required this.text,
     required this.iconPath,
     required this.onPressed,
+    this.isLoading = false,
   });
 
   @override
@@ -28,24 +30,35 @@ class SocialButton extends StatelessWidget {
           ),
           foregroundColor: AppColors.textPrimary, // Splash color
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(iconPath, width: 24, height: 24),
-            const SizedBox(width: 12),
-            Flexible(
-              child: Text(
-                text,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+        child: isLoading 
+          ? const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
                   color: AppColors.textPrimary,
                 ),
               ),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(iconPath, width: 24, height: 24),
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    text,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
       ),
     );
   }

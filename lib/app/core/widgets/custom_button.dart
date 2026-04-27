@@ -14,6 +14,7 @@ class CustomButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final String? icon;
+  final bool isLoading;
 
   const CustomButton({
     super.key,
@@ -26,6 +27,7 @@ class CustomButton extends StatelessWidget {
     this.backgroundColor,
     this.textColor,
     this.icon,
+    this.isLoading = false,
   });
 
   @override
@@ -75,6 +77,18 @@ class CustomButton extends StatelessWidget {
   }
 
   Widget _buildButtonContent(Color color) {
+    if (isLoading) {
+      return Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: color,
+          ),
+        ),
+      );
+    }
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,

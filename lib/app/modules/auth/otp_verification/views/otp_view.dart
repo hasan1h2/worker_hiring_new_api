@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_strings.dart';
-import '../../../core/widgets/custom_appBar/custom_app_bar.dart';
-import '../../../core/widgets/custom_button.dart';
-import '../controllers/auth_controller.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_strings.dart';
+import '../../../../core/widgets/custom_appBar/custom_app_bar.dart';
+import '../../../../core/widgets/custom_button.dart';
+import '../controllers/otp_verification_controller.dart';
 
-class OtpView extends GetView<AuthController> {
+class OtpView extends GetView<OtpVerificationController> {
   const OtpView({super.key});
 
   @override
@@ -41,7 +41,7 @@ class OtpView extends GetView<AuthController> {
             // OTP Fields
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(6, (index) => _buildOtpDigit(context)),
+              children: List.generate(6, (index) => _buildOtpDigit(context, index)),
             ),
 
             const SizedBox(height: 24),
@@ -79,7 +79,7 @@ class OtpView extends GetView<AuthController> {
                     style: const TextStyle(color: AppColors.textSecondary),
                   ),
                   GestureDetector(
-                    onTap: controller.onResendOtp,
+                    onTap: controller.resendOtp,
                     child: Text(
                       'resendCode'.tr,
                       style: const TextStyle(
@@ -95,12 +95,11 @@ class OtpView extends GetView<AuthController> {
 
             const Spacer(),
 
-            CustomButton(
-              text: AppStrings
-                  .continueText
-                  .tr, // "Sign in" on button as per design? Or "Verify"? Design says "Sign in"
-              onPressed: controller.onVerifyOtp,
-            ),
+            Obx(() => CustomButton(
+              text: AppStrings.continueText.tr, 
+              onPressed: controller.isLoading.value ? () {} : controller.verifyOtp,
+              isLoading: controller.isLoading.value,
+            )),
             const SizedBox(height: 30),
           ],
         ),
@@ -108,7 +107,7 @@ class OtpView extends GetView<AuthController> {
     );
   }
 
-  Widget _buildOtpDigit(BuildContext context) {
+  Widget _buildOtpDigit(BuildContext context, int index) {
     return Container(
       width: 48,
       height: 48,
@@ -118,12 +117,20 @@ class OtpView extends GetView<AuthController> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
-      child: const TextField(
+      child: TextField(
+        controller: controller.otpControllers[index],
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         maxLength: 1,
-        decoration: InputDecoration(counterText: "", border: InputBorder.none),
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        onChanged: (value) {
+          if (value.isNotEmpty && index < 5) {
+            FocusScope.of(context).nextFocus();
+          } else if (value.isEmpty && index > 0) {
+            FocusScope.of(context).previousFocus();
+          }
+        },
+        decoration: const InputDecoration(counterText: "", border: InputBorder.none),
+        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
       ),
     );
   }

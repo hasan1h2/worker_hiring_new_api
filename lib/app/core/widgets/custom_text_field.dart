@@ -11,8 +11,9 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final ValueChanged<String>? onChanged;
   final int maxLines;
-
   final bool readOnly;
+  final Color? borderColor;
+  final String? errorText;
 
   const CustomTextField({
     super.key,
@@ -26,6 +27,8 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.onChanged,
     this.maxLines = 1,
+    this.borderColor,
+    this.errorText,
   });
 
   @override
@@ -33,46 +36,53 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
-          ),
-          child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            obscureText: obscureText,
-            readOnly: readOnly,
-            validator: validator,
-            onChanged: onChanged,
-            maxLines: maxLines,
-            style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-            decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 16,
-              ),
-              prefixIcon: prefixIcon,
-              suffixIcon: suffixIcon,
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              errorBorder: InputBorder.none,
-              focusedErrorBorder: InputBorder.none,
-              // Move error message outside the border
-              errorStyle: const TextStyle(height: 0),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          obscureText: obscureText,
+          readOnly: readOnly,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: validator,
+          onChanged: onChanged,
+          maxLines: maxLines,
+          style: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+          decoration: InputDecoration(
+            hintText: hintText,
+            errorText: errorText,
+            hintStyle: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 16,
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            prefixIcon: prefixIcon,
+            suffixIcon: suffixIcon,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor ?? AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor ?? AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: borderColor ?? AppColors.primary),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red),
             ),
           ),
         ),
-        // If there's a validator, we might need a way to show error.
-        // For simplicity with this design, I'll keep it basic but maybe add a custom error display if needed.
-        // Actually, TextFormField usually handles it but the container hides it.
       ],
     );
   }

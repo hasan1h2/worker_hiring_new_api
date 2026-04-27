@@ -49,7 +49,7 @@ class AppStrings extends Translations {
       password = 'password',
       phoneNumber = 'phoneNumber',
       city = 'city',
-      alreadyHaveAccount = 'alreadyHaveAccount',
+      alreadyHaveAccount = 'Already have an account?',
       orCreateAccount = 'orCreateAccount',
       signUp = 'signUp',
       continueWithGoogle = 'continueWithGoogle',

@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:geolocator/geolocator.dart';
+import '../../../../routes/app_pages.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:http/http.dart' as http;
 
+import '../providers/signup_provider.dart';
 class SignupController extends GetxController {
+  // Provider
+  final SignupProvider _provider = SignupProvider();
+
   // Text Editing Controllers
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
@@ -18,13 +21,56 @@ class SignupController extends GetxController {
 
   // Loading state
   final RxBool isLoading = false.obs;
+  
+  // Password Visibility & Strength
+  final RxBool isPasswordHidden = true.obs;
+  final RxString passwordStrength = ''.obs;
+  final Rx<Color> strengthColor = Colors.grey.obs;
+
+  // Email Validation
+  final RxBool isEmailValid = false.obs;
+
+  void togglePasswordVisibility() {
+    isPasswordHidden.value = !isPasswordHidden.value;
+  }
+
+  void validateEmailRealTime(String value) {
+    if (GetUtils.isEmail(value)) {
+      isEmailValid.value = true;
+    } else {
+      isEmailValid.value = false;
+    }
+  }
+
+  void updatePasswordStrength(String value) {
+    if (value.isEmpty) {
+      passwordStrength.value = '';
+      strengthColor.value = Colors.grey;
+    } else if (value.length < 6) {
+      passwordStrength.value = 'Very Weak';
+      strengthColor.value = Colors.red;
+    } else if (value.length < 8) {
+      passwordStrength.value = 'Weak';
+      strengthColor.value = Colors.orange;
+    } else if (value.contains(RegExp(r'[a-zA-Z]')) && value.contains(RegExp(r'[0-9]')) && !value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      passwordStrength.value = 'Good';
+      strengthColor.value = Colors.blue;
+    } else if (value.length >= 8 && value.contains(RegExp(r'[A-Z]')) && value.contains(RegExp(r'[a-z]')) && value.contains(RegExp(r'[0-9]')) && value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) {
+      passwordStrength.value = 'Strong';
+      strengthColor.value = Colors.green;
+    } else {
+      // Default to Good if it's 8+ chars and doesn't meet the strict 'Strong' criteria but isn't weak.
+      passwordStrength.value = 'Good';
+      strengthColor.value = Colors.blue;
+    }
+  }
 
   // Address data
   final RxString lat = "".obs;
   final RxString lng = "".obs;
 
   // Form key
-  final formKey = GlobalKey<FormState>();
+  final signupFormKey = GlobalKey<FormState>();
 
   // Validation logic
   String? validateEmail(String? value) {
@@ -63,7 +109,7 @@ class SignupController extends GetxController {
 
   // API Logic
   Future<void> signupUser() async {
-    if (!formKey.currentState!.validate()) return;
+    if (!signupFormKey.currentState!.validate()) return;
 
     if (lat.isEmpty || lng.isEmpty) {
       Get.snackbar("Error", "Please select a location on map".tr);
@@ -72,8 +118,6 @@ class SignupController extends GetxController {
 
     isLoading.value = true;
 
-    final url = Uri.parse('https://samimdev.pythonanywhere.com/api/v1/auth/signup/');
-    
     final body = {
       "first_name": firstNameController.text.trim(),
       "last_name": lastNameController.text.trim(),
@@ -90,19 +134,13 @@ class SignupController extends GetxController {
     };
 
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      );
-
+      final response = await _provider.signupUser(body);
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Get.snackbar("Success", responseData['message'] ?? "Signup successful!".tr,
             backgroundColor: Colors.green, colorText: Colors.white);
-        // Navigate to login or next screen
-        // Get.offNamed('/login');
+        Get.toNamed(Routes.OTP, arguments: {'email': emailController.text.trim(), 'flowType': 'signup'});
       } else {
         String errorMessage = responseData['message'] ?? "Signup failed".tr;
         if (responseData['errors'] != null) {
@@ -112,7 +150,7 @@ class SignupController extends GetxController {
             backgroundColor: Colors.red, colorText: Colors.white);
       }
     } catch (e) {
-      Get.snackbar("Error", "Something went wrong. Please try again.".tr,
+      Get.snackbar("Error", e.toString().tr,
           backgroundColor: Colors.red, colorText: Colors.white);
     } finally {
       isLoading.value = false;
