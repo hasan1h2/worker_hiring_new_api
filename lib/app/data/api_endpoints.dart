@@ -19,4 +19,7 @@ class ApiEndpoints {
   // Token Management
   static const String tokenVerify = '/token/verify/';
   static const String tokenRefresh = '/token/refresh/';
+
+  // Provider Verification
+  static const String providerVerification = '/provider-verification/';
 }

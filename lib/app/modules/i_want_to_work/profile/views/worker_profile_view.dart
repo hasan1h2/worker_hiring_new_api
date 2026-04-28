@@ -8,6 +8,9 @@ import '../../../../core/constants/app_images.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../common/payout/views/payout_view.dart';
 import '../controllers/worker_profile_controller.dart';
+import '../helper_profile_controller.dart';
+import '../create_helper_profile_view.dart';
+import '../edit_helper_profile_view.dart';
 import 'worker_account_view.dart';
 import '../../../i_need_help/profile/views/worker_billing_list_view.dart';
 import 'worker_report_view.dart';
@@ -20,6 +23,8 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
 
   @override
   Widget build(BuildContext context) {
+    final helperController = Get.put(HelperProfileController());
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
@@ -27,40 +32,75 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
         showLeading: false,
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit, color: Colors.black87),
+            onPressed: () => Get.to(() => const EditHelperProfileView()),
+          ),
+          IconButton(
             icon: const Icon(Icons.menu, color: Colors.black87),
             onPressed: () => Get.toNamed(Routes.WORKER_SETTINGS),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProfileHeader(),
-            const SizedBox(height: 32),
-            _buildAboutSection(),
-            const SizedBox(height: 32),
-            _buildPricingSection(),
-            const SizedBox(height: 32),
-            _buildAccountStatusSection(),
-            const SizedBox(height: 32),
-            _buildAvailabilitySection(),
-            const SizedBox(height: 32),
-            _buildSkillsSection(),
-            const SizedBox(height: 32),
-            _buildPortfolioSection(),
-            const SizedBox(height: 32),
-            _buildReviewsSection(),
-            const SizedBox(height: 100), // Spacing for bottom button
-          ],
-        ),
-      ),
+      body: Obx(() {
+        if (helperController.isLoading.value) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF4CAF50)));
+        }
+
+        if (helperController.profileData.value == null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.account_circle_outlined, size: 80, color: Colors.grey),
+                const SizedBox(height: 16),
+                const Text('No Profile Set Up', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                const Text('Create your helper profile to start offering services.', style: TextStyle(color: Colors.grey)),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Get.to(() => const CreateHelperProfileView()),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4CAF50),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  ),
+                  child: const Text('Create Profile', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildProfileHeader(helperController),
+              const SizedBox(height: 32),
+              _buildAboutSection(helperController),
+              const SizedBox(height: 32),
+              _buildPricingSection(helperController),
+              const SizedBox(height: 32),
+              _buildAccountStatusSection(),
+              const SizedBox(height: 32),
+              _buildAvailabilitySection(),
+              const SizedBox(height: 32),
+              _buildSkillsSection(helperController),
+              const SizedBox(height: 32),
+              _buildPortfolioSection(),
+              const SizedBox(height: 32),
+              _buildReviewsSection(),
+              const SizedBox(height: 100), // Spacing for bottom button
+            ],
+          ),
+        );
+      }),
       // bottomNavigationBar: _buildBottomButton(),
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(HelperProfileController helperController) {
     return Center(
       child: Column(
         children: [
@@ -79,23 +119,23 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Alex Smith',
-            style: TextStyle(
+          Text(
+            helperController.profileData.value?.companyName ?? "No Name Set",
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
           ),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.location_on, color: Colors.redAccent, size: 16),
-              SizedBox(width: 4),
+              const Icon(Icons.location_on, color: Colors.redAccent, size: 16),
+              const SizedBox(width: 4),
               Text(
-                'San Francisco, CA • 2.5 km away',
-                style: TextStyle(
+                helperController.profileData.value?.officeLocation?.addressLine ?? 'No location set',
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.grey,
                 ),
@@ -107,21 +147,21 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
     );
   }
 
-  Widget _buildAboutSection() {
-    return const Column(
+  Widget _buildAboutSection(HelperProfileController helperController) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'About',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Text(
-          'Professional house assistant with over 5 years of experience in furniture assembly and general maintenance. Dedicated to providing high-quality service and ensuring client satisfaction.',
-          style: TextStyle(
+          helperController.profileData.value?.details ?? 'No description provided.',
+          style: const TextStyle(
             fontSize: 14,
             color: Colors.black87,
             height: 1.5,
@@ -131,7 +171,7 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
     );
   }
 
-  Widget _buildPricingSection() {
+  Widget _buildPricingSection(HelperProfileController helperController) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -164,9 +204,9 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          r'$30/hr',
-                          style: TextStyle(
+                        Text(
+                          '\$${helperController.profileData.value?.hourlyRate ?? "0.00"}/hr',
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -191,9 +231,9 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          '2 Hours',
-                          style: TextStyle(
+                        Text(
+                          '${helperController.profileData.value?.minBookingHours ?? 1} Hours',
+                          style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -205,23 +245,21 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
                   thickness: 1,
                   width: 1,
                 ),
-
-                // --- CHANGED FROM STRIKES TO COMPLETE RATE ---
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Column(
                       children: [
-                        const Icon(Icons.check_circle_outline, // Changed Icon
-                            color: Color(0xFF6CA34D), size: 24), // Changed color to match theme
+                        const Icon(Icons.check_circle_outline, 
+                            color: Color(0xFF6CA34D), size: 24), 
                         const SizedBox(height: 8),
                         const Text(
-                          'Complete Rate', // Changed title
+                          'Complete Rate', 
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                         const SizedBox(height: 4),
                         Obx(() => Text(
-                          '${controller.completionRate.value}%', // Updated variable and added %
+                          '${controller.completionRate.value}%', 
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         )),
@@ -229,8 +267,6 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
                     ),
                   ),
                 ),
-                // ----------------------------------------------
-
               ],
             ),
           ),
@@ -414,8 +450,8 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
     );
   }
 
-  Widget _buildSkillsSection() {
-    final skills = ['Home assistance', 'Furniture assembly', 'General cleaning'];
+  Widget _buildSkillsSection(HelperProfileController helperController) {
+    final categories = helperController.profileData.value?.serviceCategory ?? [];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -427,27 +463,29 @@ class WorkerProfileView extends GetView<WorkerProfileController> {
           ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: skills.map((skill) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFF6CA34D)),
-              ),
-              child: Text(
-                skill,
-                style: const TextStyle(
-                  color: Color(0xFF6CA34D),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+        categories.isEmpty 
+          ? const Text('No skills provided.', style: TextStyle(color: Colors.grey))
+          : Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: categories.map((cat) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF6CA34D)),
                 ),
-              ),
-            );
-          }).toList(),
-        ),
+                child: Text(
+                  cat.title ?? 'Service',
+                  style: const TextStyle(
+                    color: Color(0xFF6CA34D),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }
